@@ -71,3 +71,25 @@ ggplot(combined,aes(x=low_inc_pct,y=stress_pct)) +
   labs(x="Low Income",y="Very Stressed by Rising Prices") +
   scale_y_continuous(labels = scales::percent) +
   scale_x_continuous(labels = scales::percent)
+
+library(tmap)
+library(fiftystater)
+library(mapproj)
+
+# states map
+states <- tigris::states() %>%
+  mutate("STATEFP_NUM"=as.numeric(STATEFP))
+
+states %>%
+  left_join(pulse_lowinc,by=c("STATEFP"="EST_ST")) %>%
+  mutate(NAME=tolower(NAME)) %>%
+  ggplot(aes(map_id = NAME,fill=low_inc_pct)) +
+    geom_map(map = fifty_states) + 
+    expand_limits(x = fifty_states$long, y = fifty_states$lat) +
+    coord_map() +
+    theme_minimal() +
+    scale_x_continuous(breaks = NULL) + 
+    scale_y_continuous(breaks = NULL) +
+    labs(x = "", y = "") +
+    scale_fill_gradient(high="darkred",low="white",name="Percent Low Income") +
+  fifty_states_inset_boxes()
